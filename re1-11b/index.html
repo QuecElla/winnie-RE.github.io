@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+	<title>RE1-11B</title>
+	<style>
+		:root {
+			color-scheme: light;
+			--bg-top: #f4efe6;
+			--bg-bottom: #dcecff;
+			--card: rgba(255, 255, 255, 0.88);
+			--card-border: rgba(34, 60, 80, 0.12);
+			--text: #1f2937;
+			--muted: #5f6b7a;
+			--accent: #0f766e;
+			--accent-strong: #115e59;
+			--accent-soft: #d8f3ef;
+			--shadow: 0 18px 45px rgba(31, 41, 55, 0.12);
+			--danger: #b91c1c;
+		}
+
+		* {
+			box-sizing: border-box;
+			-webkit-tap-highlight-color: transparent;
+		}
+
+		body {
+			margin: 0;
+			min-height: 100vh;
+			font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+			color: var(--text);
+			background:
+				radial-gradient(circle at top left, rgba(255, 255, 255, 0.82), transparent 34%),
+				radial-gradient(circle at bottom right, rgba(15, 118, 110, 0.14), transparent 28%),
+				linear-gradient(160deg, var(--bg-top), var(--bg-bottom));
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			padding: max(18px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom));
+		}
+
+		.app {
+			width: min(100%, 860px);
+			background: var(--card);
+			border: 1px solid var(--card-border);
+			border-radius: 28px;
+			box-shadow: var(--shadow);
+			backdrop-filter: blur(18px);
+			overflow: hidden;
+		}
+
+		.header {
+			padding: 24px 24px 12px;
+		}
+
+		.title {
+			margin: 0;
+			font-size: clamp(3rem, 6vw + 1.5rem, 5rem);
+			font-weight: 760;
+			letter-spacing: 0.02em;
+		}
+
+		.subtitle {
+			margin: 10px 0 0;
+			color: var(--muted);
+			font-size: 0.98rem;
+			line-height: 1.6;
+		}
+
+		.main {
+			padding: 12px 24px 24px;
+		}
+
+		.progress-row {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			gap: 12px;
+			margin-bottom: 18px;
+			color: var(--muted);
+			font-size: 1.08rem;
+		}
+
+		.progress-badge {
+			padding: 10px 16px;
+			border-radius: 999px;
+			background: var(--accent-soft);
+			color: var(--accent-strong);
+			font-weight: 700;
+			white-space: nowrap;
+			font-size: 1.05rem;
+		}
+
+		.sentence-card {
+			padding: 28px 22px;
+			border-radius: 24px;
+			background: rgba(255, 255, 255, 0.92);
+			border: 1px solid rgba(17, 94, 89, 0.09);
+			min-height: 160px;
+			display: flex;
+			align-items: center;
+			justify-content: flex-start;
+			text-align: left;
+		}
+
+		.sentence {
+			margin: 0;
+			font-size: clamp(1.5rem, 3.5vw + 0.6rem, 2.6rem);
+			line-height: 1.6;
+			font-weight: 650;
+			word-break: break-word;
+			width: 100%;
+			text-align: left;
+		}
+
+		.controls {
+			display: grid;
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+			gap: 12px;
+			margin-top: 20px;
+		}
+
+		button {
+			border: none;
+			border-radius: 16px;
+			padding: 16px 14px;
+			font-size: 1rem;
+			font-weight: 700;
+			cursor: pointer;
+			color: white;
+			background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+			box-shadow: 0 10px 20px rgba(15, 118, 110, 0.18);
+			transition: transform 0.18s ease, opacity 0.18s ease;
+		}
+
+		button.secondary {
+			color: var(--accent-strong);
+			background: #eef8f7;
+			box-shadow: none;
+		}
+
+		button:active {
+			transform: scale(0.98);
+		}
+
+		button:disabled {
+			cursor: not-allowed;
+			opacity: 0.45;
+			transform: none;
+		}
+
+		.result-panel {
+			margin-top: 18px;
+			border-radius: 22px;
+			background: rgba(239, 246, 255, 0.72);
+			border: 1px solid rgba(59, 130, 246, 0.12);
+			padding: 18px 18px 20px;
+		}
+
+		.result-label {
+			margin: 0 0 12px;
+			color: var(--muted);
+			font-size: 1.1rem;
+			font-weight: 700;
+		}
+
+		.result-text {
+			margin: 0;
+			min-height: 72px;
+			font-size: 1.3rem;
+			line-height: 1.8;
+			white-space: pre-wrap;
+			word-break: break-word;
+		}
+
+		.status {
+			margin-top: 14px;
+			color: var(--muted);
+			font-size: 0.94rem;
+			min-height: 1.4em;
+		}
+
+		.status.error {
+			color: var(--danger);
+		}
+
+		@media (max-width: 720px) {
+			.app {
+				border-radius: 24px;
+			}
+
+			.header {
+				padding: 28px 22px 14px;
+			}
+
+			.main {
+				padding: 14px 22px 28px;
+			}
+
+			.title {
+				font-size: clamp(2.6rem, 5vw + 1.2rem, 4.2rem);
+			}
+
+			.sentence {
+				font-size: clamp(1.5rem, 4vw + 0.4rem, 2.2rem);
+			}
+
+			.sentence-card {
+				min-height: 130px;
+				padding: 22px 16px;
+			}
+
+			.controls {
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				gap: 16px;
+			}
+
+			button {
+				padding: 14px 12px;
+				font-size: 0.95rem;
+				border-radius: 14px;
+			}
+
+			.result-text {
+				font-size: 1.25rem;
+				min-height: 80px;
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="app">
+		<div class="header">
+			<h1 class="title">RE1-11B</h1>
+			<p class="subtitle">点击播放听原音，点击跟读开始识别。页面无需联网，可直接在本地打开使用。</p>
+		</div>
+		<div class="main">
+			<div class="progress-row">
+				<div id="hint">按顺序练习每一句。</div>
+				<div class="progress-badge" id="progress">1 / 1</div>
+			</div>
+			<div class="sentence-card">
+				<p class="sentence" id="sentence"></p>
+			</div>
+			<div class="controls">
+				<button class="secondary" id="prevBtn" type="button">上一句</button>
+				<button id="playBtn" type="button">播放音频</button>
+				<button id="speakBtn" type="button">🎤 跟读</button>
+				<button class="secondary" id="nextBtn" type="button">下一句</button>
+			</div>
+			<div class="result-panel">
+				<p class="result-label">识别结果</p>
+				<p class="result-text" id="resultText">点击“🎤 跟读”开始录音识别。</p>
+			</div>
+			<div class="status" id="status"></div>
+		</div>
+	</div>
+
+	<script>
+		const practiceData = {"sentences": ["11B-FIVE TIPS FOR USING LESS PLASTIC", "The world has a plastic problem-and it is increasing.", "Scientists are working to find a long-term solution by making plastic more biodegradable.", "But in the meantime, here are five things you can do to reduce plastic waste now.", "1. Quit using plastic bags.", "Instead, take your own reusable shopping bag to the store.", "People use a trillion' plastic bags worldwide every year.", "Roughly 10 percent are used in the United States alone.", "That's almost one bag per American per day.", "In contrast, the average Dane uses four single-use bags per year.", "In 1993, Denmark was the first country to place a tax on plastic bags.", "Today, other countries (such as Chile, Kenya, Indonesia, Germany,and New Zealand) either make customers pay for plastic bags,or have banned them completely.", "2. Skip the straw.", "Today, around 8.3 billion plastic straws pollute the world's beaches.", "So when you order a drink, say no to the straw, or bring your own reusable one.", "In 2018, Seattle became the first major U.S. city to ban plastic straws, and many other cities are set to follow its example.", "3. Don't use plastic bottles.", "Buy a reusable bottle and fill it with any type of beverage you like.", "Some cities, like Bundanoon in Australia and San Francisco in the U.S., have completely or partially banned bottled water.", "Globally, however, people still buy nearly a million plastic bottles every minute.", "4. Avoid plastic packaging.", "Buy bar soap instead of liquid soap in plastic containers.", "Don't buy fruit or vegetables in plastic packaging.", "In the United Kingdom, leaders are calling for2 supermarkets to have plastic-free areas.", "They also want to tax plastic take-out containers.", "5. Recycle.", "We can't recycle all plastic items, but it is possible to recy most bottles and milk or juice cartons.", "Today, Norway recycles 97 percent of its plastic bottles.", "How? Machines at most supermarkets take the bottiles and give a refund of up to 2.5 kroner (32 cents) per bottle."], "audios": ["audio/1.mp3", "audio/2.mp3", "audio/3.mp3", "audio/4.mp3", "audio/5.mp3", "audio/6.mp3", "audio/7.mp3", "audio/8.mp3", "audio/9.mp3", "audio/10.mp3", "audio/11.mp3", "audio/12.mp3", "audio/13.mp3", "audio/14.mp3", "audio/15.mp3", "audio/16.mp3", "audio/17.mp3", "audio/18.mp3", "audio/19.mp3", "audio/20.mp3", "audio/21.mp3", "audio/22.mp3", "audio/23.mp3", "audio/24.mp3", "audio/25.mp3", "audio/26.mp3", "audio/27.mp3", "audio/28.mp3", "audio/29.mp3"]};
+		const sentences = practiceData.sentences || [];
+		const audios = practiceData.audios || [];
+
+		let currentIndex = 0;
+		let recognition = null;
+		let isListening = false;
+		let forceStopTimer = null;
+		let autoStopTimer = null;
+		let audioPlayer = new Audio();
+
+		const sentenceEl = document.getElementById('sentence');
+		const progressEl = document.getElementById('progress');
+		const resultTextEl = document.getElementById('resultText');
+		const statusEl = document.getElementById('status');
+		const prevBtn = document.getElementById('prevBtn');
+		const nextBtn = document.getElementById('nextBtn');
+		const playBtn = document.getElementById('playBtn');
+		const speakBtn = document.getElementById('speakBtn');
+
+		function setStatus(message, isError) {
+			statusEl.textContent = message || '';
+			statusEl.className = isError ? 'status error' : 'status';
+		}
+
+		function clearRecognitionTimers() {
+			if (forceStopTimer) {
+				clearTimeout(forceStopTimer);
+				forceStopTimer = null;
+			}
+			if (autoStopTimer) {
+				clearTimeout(autoStopTimer);
+				autoStopTimer = null;
+			}
+		}
+
+		function resetRecognitionUi(message, isError) {
+			isListening = false;
+			clearRecognitionTimers();
+			speakBtn.textContent = '🎤 跟读';
+			if (message) {
+				setStatus(message, Boolean(isError));
+			}
+		}
+
+		function playCurrentAudio() {
+			if (!audios[currentIndex]) {
+				setStatus('当前句子没有可播放的音频。', true);
+				return;
+			}
+			audioPlayer.pause();
+			audioPlayer.currentTime = 0;
+			audioPlayer.src = audios[currentIndex];
+			const playPromise = audioPlayer.play();
+			if (playPromise && typeof playPromise.catch === 'function') {
+				playPromise.catch(() => {
+					setStatus('Safari 可能要求先手动点击播放按钮。', true);
+				});
+			}
+		}
+
+		function updateView(autoPlay) {
+			sentenceEl.textContent = sentences[currentIndex] || '';
+			progressEl.textContent = `${currentIndex + 1} / ${sentences.length}`;
+			prevBtn.disabled = currentIndex === 0;
+			nextBtn.disabled = currentIndex === sentences.length - 1;
+			resultTextEl.textContent = '点击“🎤 跟读”开始录音识别。';
+			setStatus('');
+			audioPlayer.pause();
+			audioPlayer.currentTime = 0;
+			audioPlayer.src = audios[currentIndex] || '';
+			if (autoPlay) {
+				playCurrentAudio();
+			}
+		}
+
+		function stopRecognition() {
+			if (!recognition || !isListening) {
+				return;
+			}
+			setStatus('正在停止录音...');
+			clearRecognitionTimers();
+			try {
+				recognition.stop();
+			} catch (error) {
+				try {
+					recognition.abort();
+				} catch (abortError) {
+					resetRecognitionUi('录音已停止。');
+				}
+			}
+			forceStopTimer = setTimeout(() => {
+				if (!isListening) {
+					return;
+				}
+				try {
+					recognition.abort();
+				} catch (error) {
+					// Ignore.
+				}
+				resetRecognitionUi('录音已停止。');
+			}, 1200);
+		}
+
+		function initRecognition() {
+			const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+			if (!SpeechRecognition) {
+				setStatus('当前浏览器不支持语音识别，请使用 Safari 或支持 Web Speech API 的浏览器。', true);
+				speakBtn.disabled = true;
+				return;
+			}
+
+			recognition = new SpeechRecognition();
+			recognition.lang = 'en-US';
+			recognition.interimResults = true;
+			recognition.continuous = false;
+
+			recognition.onstart = () => {
+				isListening = true;
+				clearRecognitionTimers();
+				autoStopTimer = setTimeout(() => {
+					if (isListening) {
+						setStatus('录音时间较长，已自动停止。');
+						stopRecognition();
+					}
+				}, 12000);
+				speakBtn.textContent = '识别中...';
+				setStatus('正在听取你的跟读，请保持安静环境。');
+				resultTextEl.textContent = '正在识别...';
+			};
+
+			recognition.onresult = (event) => {
+				let transcript = '';
+				for (let i = event.resultIndex; i < event.results.length; i += 1) {
+					transcript += event.results[i][0].transcript;
+				}
+				resultTextEl.textContent = transcript.trim() || '未识别到清晰语音。';
+			};
+
+			recognition.onerror = (event) => {
+				let message = '语音识别失败，请重试。';
+				if (event.error === 'not-allowed') {
+					message = '麦克风权限被拒绝，请允许浏览器访问麦克风。';
+				} else if (event.error === 'no-speech') {
+					message = '没有检测到语音，请靠近麦克风后重试。';
+				} else if (event.error === 'audio-capture') {
+					message = '无法访问麦克风，请检查设备设置。';
+				} else if (event.error === 'aborted') {
+					message = '录音已停止。';
+				}
+				resetRecognitionUi(message, event.error !== 'aborted');
+			};
+
+			recognition.onend = () => {
+				if (statusEl.classList.contains('error')) {
+					resetRecognitionUi();
+					return;
+				}
+				resetRecognitionUi('识别结束，可以继续播放或切换下一句。');
+			};
+		}
+
+		prevBtn.addEventListener('click', () => {
+			if (currentIndex > 0) {
+				stopRecognition();
+				currentIndex -= 1;
+				updateView(true);
+			}
+		});
+
+		nextBtn.addEventListener('click', () => {
+			if (currentIndex < sentences.length - 1) {
+				stopRecognition();
+				currentIndex += 1;
+				updateView(true);
+			}
+		});
+
+		playBtn.addEventListener('click', () => {
+			playCurrentAudio();
+		});
+
+		speakBtn.addEventListener('click', () => {
+			if (!recognition) {
+				initRecognition();
+			}
+			if (!recognition) {
+				return;
+			}
+			if (isListening) {
+				stopRecognition();
+			} else {
+				setStatus('如果浏览器首次请求麦克风权限，请选择允许。');
+				recognition.start();
+			}
+		});
+
+		updateView(false);
+		initRecognition();
+	</script>
+</body>
+</html>
